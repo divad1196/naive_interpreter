@@ -61,9 +61,9 @@ struct SubExpr {
 	};
 typedef struct SubExpr SubExpr;
 
-void print_subExpr(const SubExpr& sub_expr)
+void print_subExpr(const SubExpr* sub_expr)
 {
-	printf("%.*s\n",sub_expr.len + 1,sub_expr.start);
+	printf("%.*s\n",sub_expr->len + 1,sub_expr->start);
 }
 
 float compute_expression(char expression[],size_t length)
@@ -77,19 +77,19 @@ float compute_sub_expressions(char expression[],size_t length)
 	printf("%.*s\n",length,expression);
 	// Do a struct to handle those 2?
 	SubExpr sub_expressions[50];
-	size_t sub_expr_len(0);
+	size_t sub_expr_len = 0;
 
-	int is_open(0); // we will handle by levels and recursively: ( 5 * (2 + 4) ) - 2 will see only one bracket : ( 5 * (2 + 4) ), this will be considered has a new expression
+	int is_open = 0; // we will handle by levels and recursively: ( 5 * (2 + 4) ) - 2 will see only one bracket : ( 5 * (2 + 4) ), this will be considered has a new expression
 
 
-	for(size_t i(0); i < length; i++)
+	for(size_t i = 0; i < length; i++)
 	{
 		// Currently handle brackets () only
 		if(	expression[i] == '(')
 		{
 			if(!is_open)
 			{
-				sub_expressions[sub_expr_len] = {'(',&expression[i],i,0};
+				sub_expressions[sub_expr_len] = (SubExpr){'(',&expression[i],i,0};
 				sub_expr_len += 1;
 			}
 			is_open += 1;
@@ -98,11 +98,11 @@ float compute_sub_expressions(char expression[],size_t length)
 		{
 			if(is_open == 1)
 			{
-				int match_pos(-1);
+				int match_pos = -1;
 				size_t index;
-				for(size_t j(0); j < sub_expr_len; j++)
+				for(size_t j = 0; j < sub_expr_len; j++)
 				{
-					if(sub_expressions[j].open == '(' and sub_expressions[j].len == 0)
+					if(sub_expressions[j].open == '(' && sub_expressions[j].len == 0)
 					{
 						match_pos = i;
 						index = j;
@@ -125,7 +125,7 @@ float compute_sub_expressions(char expression[],size_t length)
 	}
 	else
 	{
-		for(size_t n(0); n < sub_expr_len; n++) //add verification if the sub_expression is closed and correct
+		for(size_t n = 0; n < sub_expr_len; n++) //add verification if the sub_expression is closed and correct
 		{
 			//~ print_subExpr(sub_expressions[n]);
 			compute_sub_expressions(sub_expressions[n].start + 1,sub_expressions[n].len - 1); // recursivité
@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 	{
 		printf("No argument provided\n");
 	}
-	
+
 	return 0;
 }
 
