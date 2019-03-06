@@ -1,5 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
 
 //~ float strtofl(const char str[])
 //~ {
@@ -38,6 +40,7 @@
 
 float evaluate(float left, float right, char symbol)
 {
+	//printf("evaluate: %d,%s,%d\n",left,symbol,right);
 	if(symbol == '+')
 		return left + right;
 	else if(symbol == '-')
@@ -66,15 +69,62 @@ void print_subExpr(const SubExpr* sub_expr)
 	printf("%.*s\n",sub_expr->len + 1,sub_expr->start);
 }
 
+enum OperatorFound {
+	OF_NONE,
+	OF_PlUS_MINUS,
+	OF_MULT_DIV,
+	OF_POWER
+};
+typedef enum OperatorFound OperatorFound;
+
 float compute_expression(char expression[],size_t length)
 {
+	//We receive an expression without (), for example 5^3 + 3 - 4 * 5
+	char* op = NULL;
+	OperatorFound level = OF_NONE;
+	printf("======================\n");
+	printf("%.*s\n",length,expression);
+	printf("level: %d\n",level);
+	printf("Searching\n");
+	for(size_t i = 0; i < length && OF_POWER; i++)
+	{
+		if(expression[i] == '^')
+		{
+			op = expression + i;
+			level = OF_POWER;
+		}
+		else if(level < OF_MULT_DIV && (expression[i] == '*' || expression[i] == '/'))
+		{
+			op = expression + i;
+			level = OF_MULT_DIV;
+		}
+		else if(level < OF_PlUS_MINUS && (expression[i] == '+' || expression[i] == '-'))
+		{
+			op = expression + i;
+			level = OF_PlUS_MINUS;
+		}
+	}
+	printf("level: %d\n",level);
 
-	return 0;
+	if(level == OF_NONE)
+		return strtod(expression,NULL);
+
+	size_t len = op - expression;
+
+	float result = evaluate(
+		compute_expression(expression,len),
+		*op,
+		compute_expression(op + 1,length - len)
+	);
+
+	printf("tmp: %d\n",result);
+
+	return result;
 }
 
 float compute_sub_expressions(char expression[],size_t length)
 {
-	printf("%.*s\n",length,expression);
+	//printf("%.*s\n",length,expression);
 	// Do a struct to handle those 2?
 	SubExpr sub_expressions[50];
 	size_t sub_expr_len = 0;
@@ -150,15 +200,48 @@ int main(int argc, char* argv[])
 			//~ j--;
 		//~ }
 	//~ }
-	if(argc > 1)
+	printf("levels: %d, %d, %d, %d\n",OF_NONE,OF_PlUS_MINUS,OF_MULT_DIV,OF_POWER);
+
+	//get the total length without the spaces
+	size_t length = 0;
+	for(size_t i = 1; i < argc; i++)
 	{
-		float result = compute_sub_expressions(argv[1],strlen(argv[1]));
-		printf("result = %f\n",result);
+		for(size_t j = 0; argv[i][j] != '\0'; j++)
+		{
+			if(argv[i][j] != ' ')
+				length += 1;
+		}
 	}
-	else
+
+	//Malloc the array for the expression without spaces
+	char* expression = malloc(sizeof(char)*(length+1));
+	if (expression == NULL) // Si l'allocation a échoué
+    {
+		printf("Allocation failed\n");
+        exit(0); // On arrête immédiatement le programme
+    }
+
+	//Fill the array
+	size_t index = 0;
+	for(size_t i = 1; i < argc; i++)
 	{
-		printf("No argument provided\n");
+		for(size_t j = 0; argv[i][j] != '\0'; j++)
+		{
+			if(argv[i][j] != ' ')
+			{
+				expression[index] = argv[i][j];
+				index += 1;
+			}
+		}
 	}
+	expression[length] = '\0';
+
+	//Start to compute
+	float result = compute_sub_expressions(expression,length);
+	printf("result = %f\n",result);
+
+	//Free the array that was malloc
+	free(expression);
 
 	return 0;
 }
@@ -178,4 +261,6 @@ int main(int argc, char* argv[])
  * 		- : 10
  */
 
-//TODO: scinder et evaluer une expression sans parenthèse
+//TODO: scinder et evaluer une expression sans parenthèse -- DONE
+
+//lire un chiffre comme une expression qu'on évalue: les opérateurs n'ont des relations qu'avec des floats
