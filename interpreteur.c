@@ -5,7 +5,6 @@
 
 float evaluate(float left, char symbol, float right)
 {
-	printf("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n");
 	printf("evaluate: %d, %c, %d\n",left,symbol,right);
 	if(symbol == '+')
 		return left + right;
@@ -45,10 +44,6 @@ float compute_expression(char expression[],size_t length)
 	//We receive an expression without (), for example 5^3 + 3 - 4 * 5
 	char* op = NULL;
 	OperatorFound level = OF_NONE;
-	printf("======================\n");
-	printf("%.*s\n",length,expression);
-	printf("level: %d\n",level);
-	printf("Searching\n");
 
 	int is_open = 0; // we will handle by levels and recursively: ( 5 * (2 + 4) ) - 2 will see only one bracket : ( 5 * (2 + 4) ), this will be considered has a new expression
 	int brackets_found = 0;
@@ -83,7 +78,6 @@ float compute_expression(char expression[],size_t length)
 		//if(is_open < 0) -> ERROR : trop de (
 	}
 	//if(is_open > 0) -> ERROR : trop de )
-	printf("level: %d\n",level);
 
 	if(level == OF_NONE && !brackets_found)//It's only a float
 		return atof(expression);
@@ -92,25 +86,61 @@ float compute_expression(char expression[],size_t length)
 
 	size_t len = op - expression;
 
-	printf("//////////////////////////////////\n");
-	printf("symbol: %c, length: %d, len: %d \n",*op,length,len);
+	//~ printf("//////////////////////////////////\n");
+	//~ printf("symbol: %c, length: %d, len: %d \n",*op,length,len);
 	float result = evaluate(
 		compute_expression(expression,len),
 		*op,
 		compute_expression(op + 1,length - len - 1)
 	);
 
-	printf("tmp: %d\n",result);
+	printf("======================\n");
+	printf("%.*s = %f\n",length,expression,result);
+	//~ printf("%f\n",result);
 
 	return result;
 }
 
-//float compute((char expression[],size_t length))
+float compute(char expression[],size_t length)
+{
+	//get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
+	size_t len = 0;
+	for(size_t i = 1; i < length; i++)
+	{
+		if(expression[i] != ' ')
+			len += 1;
+	}
+
+	//Malloc the array for the expression without spaces
+	char* new_array = malloc(sizeof(char)*(length+1));
+	if (new_array == NULL) // Si l'allocation a échoué
+    {
+		printf("Allocation failed\n");
+        exit(0); // On arrête immédiatement le programme
+    }
+
+	//Fill the array
+	size_t index = 0;
+	for(size_t i = 0; i < length; i++)
+	{
+		if(new_array[i] != ' ')
+		{
+			new_array[index] = new_array[i];
+			index += 1;
+		}
+	}
+	expression[len] = '\0';
+
+	//Start to compute
+	float result = compute_expression(new_array,len);
+
+	//Free the array that was malloc
+	free(new_array);
+	return result;
+}
 
 int main(int argc, char* argv[])
 {
-	printf("levels: %d, %d, %d, %d\n",OF_NONE,OF_PlUS_MINUS,OF_MULT_DIV,OF_POWER);
-
 	//get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
 	size_t length = 0;
 	for(size_t i = 1; i < argc; i++)
