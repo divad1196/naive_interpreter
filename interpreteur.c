@@ -5,7 +5,7 @@
 
 float evaluate(float left, char symbol, float right)
 {
-	printf("evaluate: %d, %c, %d\n",left,symbol,right);
+	//~ printf("evaluate: %d, %c, %d\n",left,symbol,right);
 	if(symbol == '+')
 		return left + right;
 	else if(symbol == '-')
@@ -94,15 +94,15 @@ float compute_expression(char expression[],size_t length)
 		compute_expression(op + 1,length - len - 1)
 	);
 
-	printf("======================\n");
-	printf("%.*s = %f\n",length,expression,result);
-	//~ printf("%f\n",result);
+	//~ printf("======================\n");
+	//~ printf("%.*s = %f\n",length,expression,result);
 
 	return result;
 }
 
 float compute(char expression[],size_t length)
 {
+	//~ printf("%.*s\n",length,expression);
 	//get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
 	size_t len = 0;
 	for(size_t i = 1; i < length; i++)
@@ -112,7 +112,7 @@ float compute(char expression[],size_t length)
 	}
 
 	//Malloc the array for the expression without spaces
-	char* new_array = malloc(sizeof(char)*(length+1));
+	char* new_array = malloc(sizeof(char)*(len+1));
 	if (new_array == NULL) // Si l'allocation a échoué
     {
 		printf("Allocation failed\n");
@@ -123,13 +123,14 @@ float compute(char expression[],size_t length)
 	size_t index = 0;
 	for(size_t i = 0; i < length; i++)
 	{
-		if(new_array[i] != ' ')
+		if(expression[i] != ' ')
 		{
-			new_array[index] = new_array[i];
+			new_array[index] = expression[i];
 			index += 1;
 		}
 	}
-	expression[len] = '\0';
+	new_array[len] = '\0';
+	//~ printf("%.*s\n",len,new_array);
 
 	//Start to compute
 	float result = compute_expression(new_array,len);
@@ -141,49 +142,56 @@ float compute(char expression[],size_t length)
 
 int main(int argc, char* argv[])
 {
-	//get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
-	size_t length = 0;
-	for(size_t i = 1; i < argc; i++)
-	{
-		for(size_t j = 0; argv[i][j] != '\0'; j++)
-		{
-			if(argv[i][j] != ' ')
-				length += 1;
-		}
-	}
-
-	//Malloc the array for the expression without spaces
-	char* expression = malloc(sizeof(char)*(length+1));
-	if (expression == NULL) // Si l'allocation a échoué
-    {
-		printf("Allocation failed\n");
-        exit(0); // On arrête immédiatement le programme
-    }
-
-	//Fill the array
-	size_t index = 0;
-	for(size_t i = 1; i < argc; i++)
-	{
-		for(size_t j = 0; argv[i][j] != '\0'; j++)
-		{
-			if(argv[i][j] != ' ')
-			{
-				expression[index] = argv[i][j];
-				index += 1;
-			}
-		}
-	}
-	expression[length] = '\0';
-
-	//Start to compute
-	float result = compute_expression(expression,length);
-	printf("result = %f\n",result);
-
-	//Free the array that was malloc
-	free(expression);
-
+	float result = compute(argv[1],strlen(argv[1]));
+	printf("%f\n",result);
 	return 0;
 }
+
+//~ int main(int argc, char* argv[])
+//~ {
+	//~ //get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
+	//~ size_t length = 0;
+	//~ for(size_t i = 1; i < argc; i++)
+	//~ {
+		//~ for(size_t j = 0; argv[i][j] != '\0'; j++)
+		//~ {
+			//~ if(argv[i][j] != ' ')
+				//~ length += 1;
+		//~ }
+	//~ }
+
+	//~ //Malloc the array for the expression without spaces
+	//~ char* expression = malloc(sizeof(char)*(length+1));
+	//~ if (expression == NULL) // Si l'allocation a échoué
+    //~ {
+		//~ printf("Allocation failed\n");
+        //~ exit(0); // On arrête immédiatement le programme
+    //~ }
+
+	//~ //Fill the array
+	//~ size_t index = 0;
+	//~ for(size_t i = 1; i < argc; i++)
+	//~ {
+		//~ for(size_t j = 0; argv[i][j] != '\0'; j++)
+		//~ {
+			//~ if(argv[i][j] != ' ')
+			//~ {
+				//~ expression[index] = argv[i][j];
+				//~ index += 1;
+			//~ }
+		//~ }
+	//~ }
+	//~ expression[length] = '\0';
+
+	//~ //Start to compute
+	//~ float result = compute_expression(expression,length);
+	//~ printf("result = %f\n",result);
+
+	//~ //Free the array that was malloc
+	//~ free(expression);
+
+	//~ return 0;
+//~ }
 
 /*
  * NOTE:
