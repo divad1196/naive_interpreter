@@ -17,17 +17,6 @@ float evaluate(float left, char symbol, float right)
 		return powf(left,right);
 }
 
-struct SubExpr {
-	char open;
-
-	char* start;
-
-	size_t start_index;
-	size_t len;
-
-	};
-typedef struct SubExpr SubExpr;
-
 enum OperatorFound {
 	OF_NONE,
 	OF_POWER,
