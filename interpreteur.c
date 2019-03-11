@@ -41,6 +41,7 @@ typedef enum OperatorFound OperatorFound;
 
 float compute_expression(char expression[],size_t length)
 {
+	printf("%.*s\n",length,expression);
 	//We receive an expression without (), for example 5^3 + 3 - 4 * 5
 	char* op = NULL;
 	OperatorFound level = OF_NONE;
@@ -86,8 +87,6 @@ float compute_expression(char expression[],size_t length)
 
 	size_t len = op - expression;
 
-	//~ printf("//////////////////////////////////\n");
-	//~ printf("symbol: %c, length: %d, len: %d \n",*op,length,len);
 	float result = evaluate(
 		compute_expression(expression,len),
 		*op,
@@ -103,9 +102,10 @@ float compute_expression(char expression[],size_t length)
 float compute(char expression[],size_t length)
 {
 	//~ printf("%.*s\n",length,expression);
+
 	//get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
 	size_t len = 0;
-	for(size_t i = 1; i < length; i++)
+	for(size_t i = 0; i < length; i++)
 	{
 		if(expression[i] != ' ')
 			len += 1;
@@ -130,8 +130,7 @@ float compute(char expression[],size_t length)
 		}
 	}
 	new_array[len] = '\0';
-	//~ printf("%.*s\n",len,new_array);
-
+	printf("%.*s\n",len,new_array);
 	//Start to compute
 	float result = compute_expression(new_array,len);
 
@@ -146,52 +145,6 @@ int main(int argc, char* argv[])
 	printf("%f\n",result);
 	return 0;
 }
-
-//~ int main(int argc, char* argv[])
-//~ {
-	//~ //get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
-	//~ size_t length = 0;
-	//~ for(size_t i = 1; i < argc; i++)
-	//~ {
-		//~ for(size_t j = 0; argv[i][j] != '\0'; j++)
-		//~ {
-			//~ if(argv[i][j] != ' ')
-				//~ length += 1;
-		//~ }
-	//~ }
-
-	//~ //Malloc the array for the expression without spaces
-	//~ char* expression = malloc(sizeof(char)*(length+1));
-	//~ if (expression == NULL) // Si l'allocation a échoué
-    //~ {
-		//~ printf("Allocation failed\n");
-        //~ exit(0); // On arrête immédiatement le programme
-    //~ }
-
-	//~ //Fill the array
-	//~ size_t index = 0;
-	//~ for(size_t i = 1; i < argc; i++)
-	//~ {
-		//~ for(size_t j = 0; argv[i][j] != '\0'; j++)
-		//~ {
-			//~ if(argv[i][j] != ' ')
-			//~ {
-				//~ expression[index] = argv[i][j];
-				//~ index += 1;
-			//~ }
-		//~ }
-	//~ }
-	//~ expression[length] = '\0';
-
-	//~ //Start to compute
-	//~ float result = compute_expression(expression,length);
-	//~ printf("result = %f\n",result);
-
-	//~ //Free the array that was malloc
-	//~ free(expression);
-
-	//~ return 0;
-//~ }
 
 /*
  * NOTE:
