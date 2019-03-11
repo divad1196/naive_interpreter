@@ -6,7 +6,12 @@
 struct SubExpr;
 typedef struct SubExpr SubExpr;
 
-//~ inline
+inline float plus(float left, float right);
+inline float minus(float left, float right);
+inline float mult(float left, float right);
+inline float divf(float left, float right);
+inline float power(float left, float right);
+
 float plus(float left, float right){return left + right;}
 //~ inline
 float minus(float left, float right){return left - right;}
@@ -102,6 +107,7 @@ SubExpr* parse_expression(char expression[],size_t length)//OperatorFound level_
 	{
 		sub_expr->left = NULL;
 		sub_expr->right = NULL;
+		//atof return 0 if expression is empty -> '-9' is considered as '0-9' correctly
 		sub_expr->value = atof(expression);
 		return sub_expr;
 	}
