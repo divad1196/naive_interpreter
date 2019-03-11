@@ -5,6 +5,7 @@
 
 float evaluate(float left, char symbol, float right)
 {
+	//~ printf("evaluate: %d, %c, %d\n",left,symbol,right);
 	if(symbol == '+')
 		return left + right;
 	else if(symbol == '-')
@@ -28,6 +29,8 @@ struct SubExpr {
 	};
 typedef struct SubExpr SubExpr;
 
+void print_subExpr(const SubExpr* sub_expr) { printf("%.*s\n",sub_expr->len + 1,sub_expr->start); }
+
 enum OperatorFound {
 	OF_NONE,
 	OF_POWER,
@@ -38,6 +41,7 @@ typedef enum OperatorFound OperatorFound;
 
 float compute_expression(char expression[],size_t length)//OperatorFound level_max ? -> to force the stop sooner
 {
+	printf("%.*s\n",length,expression);
 	//We receive an expression without (), for example 5^3 + 3 - 4 * 5
 	char* op = NULL;
 	OperatorFound level = OF_NONE;
@@ -89,11 +93,16 @@ float compute_expression(char expression[],size_t length)//OperatorFound level_m
 		compute_expression(op + 1,length - len - 1)
 	);
 
+	//~ printf("======================\n");
+	//~ printf("%.*s = %f\n",length,expression,result);
+
 	return result;
 }
 
 float compute(char expression[],size_t length)
 {
+	//~ printf("%.*s\n",length,expression);
+
 	//get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
 	size_t len = 0;
 	for(size_t i = 0; i < length; i++)
@@ -121,7 +130,7 @@ float compute(char expression[],size_t length)
 		}
 	}
 	new_array[len] = '\0';
-
+	printf("%.*s\n",len,new_array);
 	//Start to compute
 	float result = compute_expression(new_array,len);
 
