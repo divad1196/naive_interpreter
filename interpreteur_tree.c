@@ -134,12 +134,19 @@ SubExpr* parse(char expression[],size_t length)
 	//~ printf("%.*s\n",length,expression);
 
 	//get the total length without the spaces -> /!\ Necessary to avoid problems and verifications
+	//~ printf("get len\n");
 	size_t len = 0;
 	for(size_t i = 0; i < length; i++)
 	{
-		if(expression[i] != ' ')
+		//add implicit *
+		if(expression[i] == '(' && i > 0 && expression[i-1] > 47 && expression[i-1] < 58 )
+			len += 2;
+		else if(expression[i] == ')' && i < length - 1 && expression[i+1] > 47 && expression[i+1] < 58 )
+			len += 2;
+		else if(expression[i] != ' ')
 			len += 1;
 	}
+	//~ printf("len = %d\n", len);
 
 	//Malloc the array for the expression without spaces
 	char* new_array = malloc(sizeof(char)*(len+1));
@@ -153,14 +160,26 @@ SubExpr* parse(char expression[],size_t length)
 	size_t index = 0;
 	for(size_t i = 0; i < length; i++)
 	{
-		if(expression[i] != ' ')
+		if(i > 0 && expression[i] == '(' && expression[i-1] > 47 && expression[i-1] < 58 )
+		{
+			new_array[index] = '*';
+			new_array[index+1] = '(';
+			index += 2;
+		}
+		else if(expression[i] == ')' && i < length - 1 && expression[i+1] > 47 && expression[i+1] < 58 )
+		{
+			new_array[index] = ')';
+			new_array[index+1] = '*';
+			index += 2;
+		}
+		else if(expression[i] != ' ')
 		{
 			new_array[index] = expression[i];
 			index += 1;
 		}
 	}
 	new_array[len] = '\0';
-	//~ printf("%.*s\n",len,new_array);
+	//~ printf("new array : %.*s\n",len,new_array);
 	//Start to compute
 	SubExpr* result = parse_expression(new_array,len);
 
@@ -171,6 +190,7 @@ SubExpr* parse(char expression[],size_t length)
 
 int main(int argc, char* argv[])
 {
+	//~ printf("%d - %d\n",'0','9');
 	SubExpr* result = parse(argv[1],strlen(argv[1]));
 	printf("%f\n",result->value);
 	freeSubExpr(result);
