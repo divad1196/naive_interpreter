@@ -3,33 +3,46 @@
 #include <string.h>
 #include <math.h>
 
-float evaluate(float left, char symbol, float right)
-{
-	//~ printf("evaluate: %d, %c, %d\n",left,symbol,right);
-	if(symbol == '+')
-		return left + right;
-	else if(symbol == '-')
-		return left - right;
-	else if(symbol == '*')
-		return left * right;
-	else if(symbol == '/')
-		return left / right;
-	else if(symbol == '^')
-		return powf(left,right);
-}
-
-struct SubExpr {
-	char open;
-
-	char* start;
-
-	size_t start_index;
-	size_t len;
-
-	};
+struct SubExpr;
 typedef struct SubExpr SubExpr;
 
-void print_subExpr(const SubExpr* sub_expr) { printf("%.*s\n",sub_expr->len + 1,sub_expr->start); }
+//~ inline
+float plus(float left, float right){return left + right;}
+//~ inline
+float minus(float left, float right){return left - right;}
+//~ inline
+float mult(float left, float right){return left * right;}
+//~ inline
+float divf(float left, float right){return left / right;}
+//~ inline
+float power(float left, float right){return powf(left,right);}
+
+struct SubExpr {
+	float value;
+
+	SubExpr* left;
+	SubExpr* right;
+
+	float (*operation)(float left,float right);
+	};
+
+SubExpr* evaluateSubExpr(SubExpr* sub_expr)
+{
+	if(sub_expr->left != NULL && sub_expr->right != NULL)
+		sub_expr->value = sub_expr->operation(evaluateSubExpr(sub_expr->left)->value,evaluateSubExpr(sub_expr->right)->value);
+	return sub_expr;
+}
+
+void freeSubExpr(SubExpr* sub_expr)
+{
+	if(sub_expr->left != NULL)
+		freeSubExpr(sub_expr->left);
+	if(sub_expr->right != NULL)
+		freeSubExpr(sub_expr->right);
+	free(sub_expr);
+}
+
+const size_t SUBEXPR_SIZE = sizeof(SubExpr);
 
 enum OperatorFound {
 	OF_NONE,
@@ -39,9 +52,9 @@ enum OperatorFound {
 };
 typedef enum OperatorFound OperatorFound;
 
-float compute_expression(char expression[],size_t length)//OperatorFound level_max ? -> to force the stop sooner
+SubExpr* parse_expression(char expression[],size_t length)//OperatorFound level_max ? -> to force the stop sooner
 {
-	printf("%.*s\n",length,expression);
+	//~ printf("%.*s\n",length,expression);
 	//We receive an expression without (), for example 5^3 + 3 - 4 * 5
 	char* op = NULL;
 	OperatorFound level = OF_NONE;
@@ -80,26 +93,43 @@ float compute_expression(char expression[],size_t length)//OperatorFound level_m
 	}
 	//if(is_open > 0) -> ERROR : trop de )
 
+
+	if(level == OF_NONE && brackets_found)//It's an expression in brackets
+		return parse_expression(expression+1,length - 2); // works because we took back the spaces -> it removes the externals brackets /!\ -2 because we remove 2 characters
+
+	SubExpr* sub_expr = malloc(SUBEXPR_SIZE);
 	if(level == OF_NONE && !brackets_found)//It's only a float
-		return atof(expression);
-	else if(level == OF_NONE && brackets_found)//It's an expression in brackets
-		return compute_expression(expression+1,length - 2); // works because we took back the spaces -> it removes the externals brackets /!\ -2 because we remove 2 characters
+	{
+		sub_expr->left = NULL;
+		sub_expr->right = NULL;
+		sub_expr->value = atof(expression);
+		return sub_expr;
+	}
 
 	size_t len = op - expression;
 
-	float result = evaluate(
-		compute_expression(expression,len),
-		*op,
-		compute_expression(op + 1,length - len - 1)
-	);
+	sub_expr->left = parse_expression(expression,len);
+	sub_expr->right = parse_expression(op + 1,length - len - 1);
+
+	if(*op == '+')
+		sub_expr->operation = plus;
+	else if(*op == '-')
+		sub_expr->operation = minus;
+	else if(*op == '*')
+		sub_expr->operation = mult;
+	else if(*op == '/')
+		sub_expr->operation = divf;
+	else if(*op == '^')
+		sub_expr->operation = power;
 
 	//~ printf("======================\n");
-	//~ printf("%.*s = %f\n",length,expression,result);
+	//~ printf("%.*s = %f\n",length,expression,sub_expr->value);
 
-	return result;
+	return sub_expr;
 }
 
-float compute(char expression[],size_t length)
+// /!\ this function only generate the data structures and evaluate it at the end by calling evaluateSubExpr
+SubExpr* parse(char expression[],size_t length)
 {
 	//~ printf("%.*s\n",length,expression);
 
@@ -130,19 +160,20 @@ float compute(char expression[],size_t length)
 		}
 	}
 	new_array[len] = '\0';
-	printf("%.*s\n",len,new_array);
+	//~ printf("%.*s\n",len,new_array);
 	//Start to compute
-	float result = compute_expression(new_array,len);
+	SubExpr* result = parse_expression(new_array,len);
 
 	//Free the array that was malloc
 	free(new_array);
-	return result;
+	return evaluateSubExpr(result);
 }
 
 int main(int argc, char* argv[])
 {
-	float result = compute(argv[1],strlen(argv[1]));
-	printf("%f\n",result);
+	SubExpr* result = parse(argv[1],strlen(argv[1]));
+	printf("%f\n",result->value);
+	freeSubExpr(result);
 	return 0;
 }
 
