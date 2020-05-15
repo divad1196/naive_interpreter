@@ -102,7 +102,7 @@ SubExpr* parse_expression(char expression[],size_t length)//OperatorFound level_
 	if(level == OF_NONE && brackets_found)//It's an expression in brackets
 		return parse_expression(expression+1,length - 2); // works because we took back the spaces -> it removes the externals brackets /!\ -2 because we remove 2 characters
 
-	SubExpr* sub_expr = malloc(SUBEXPR_SIZE);
+	SubExpr* sub_expr = (SubExpr*)malloc(SUBEXPR_SIZE);
 	if(level == OF_NONE && !brackets_found)//It's only a float
 	{
 		sub_expr->left = NULL;
@@ -155,7 +155,7 @@ SubExpr* parse(char expression[],size_t length)
 	//~ printf("len = %d\n", len);
 
 	//Malloc the array for the expression without spaces
-	char* new_array = malloc(sizeof(char)*(len+1));
+	char* new_array = (char*)malloc(sizeof(char)*(len+1));
 	if (new_array == NULL) // Si l'allocation a échoué
     {
 		printf("Allocation failed\n");
@@ -196,7 +196,8 @@ SubExpr* parse(char expression[],size_t length)
 
 int main(int argc, char* argv[])
 {
-	//~ printf("%d - %d\n",'0','9');
+	//~ printf("%d - %d - %s - %d\n",'0','9',"²",'²');
+	//~ printf("expression : %s\n",argv[1]);
 	SubExpr* result = parse(argv[1],strlen(argv[1]));
 	printf("%f\n",result->value);
 	freeSubExpr(result);
